@@ -1,0 +1,28 @@
+# This is intended to closely match the GitHub Actions configuration, so it
+# doesn't upgrade everything immediately.
+
+$script = <<SCRIPT
+echo Beginning provisioning...
+
+apt-get update
+apt-get install -y emacs-nox aptitude
+
+date > /etc/vagrant_provisioned_at
+SCRIPT
+
+Vagrant.configure("2") do |config|
+    config.vm.box = "generic/ubuntu1804"
+
+    config.vm.provision "shell", inline: $script
+
+    config.vm.define "default" do |default|
+        default.vm.provider :libvirt do |domain|
+            domain.cpus = 4
+            domain.graphics_type = "spice"
+            domain.memory = 2048
+            domain.video_type = "qxl"
+            domain.random :model => "random"
+            domain.volume_cache = "unsafe"
+        end
+    end
+end
