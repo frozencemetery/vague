@@ -1,0 +1,43 @@
+$script = <<SCRIPT
+echo Beginning provisioning...
+
+echo -e 'secretes\nsecretes' | passwd root
+echo -e 'secretes\nsecretes' | passwd vagrant
+
+setenforce 0
+sed -i 's/SELINUX=\(enforcing\|permissive\)/SELINUX=disabled/g' /etc/selinux/config
+
+cd /etc/yum.repos.d
+rm -rf *
+
+curl -kO http://file.bos.redhat.com/~rharwood/rhel7.repo
+rpm -i https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+yum -y install /usr/bin/applydeltarpm --nogpgcheck || true
+yum -y distro-sync --nogpgcheck || true
+
+yum -y install psmisc gdb valgrind git vim emacs-nox tmux systemtap gdb strace nmap ltrace lsof krb5-{libs,server,workstation} rxvt-unicode-256color wget
+
+debuginfo-install -y krb5-{libs,workstation,server}
+
+# roboxes disables ipv6 for some reason; we need that for IPA
+rm /etc/sysctl.conf
+sysctl -w net.ipv6.conf.all.disable_ipv6=0
+
+date > /etc/vagrant_provisioned_at
+SCRIPT
+
+Vagrant.configure("2") do |config|
+    config.vm.box = "roboxes/rhel7"
+    config.vm.provision "shell", inline: $script
+
+    config.vm.define "default" do |rhel7|
+        rhel7.vm.provider :libvirt do |domain|
+            domain.disk_bus = "virtio"
+            domain.cpus = 4
+            domain.graphics_type = "spice"
+            domain.memory = 2048
+            domain.video_type = "qxl"
+            domain.random :model => "random"
+        end
+    end
+end
