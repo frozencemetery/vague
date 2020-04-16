@@ -1,0 +1,38 @@
+$script = <<SCRIPT
+echo Beginning provisioning...
+
+echo -e 'secretes\nsecretes' | passwd root
+echo -e 'secretes\nsecretes' | passwd vagrant
+
+dnf -y install curl
+cd /etc/yum.repos.d
+rm -rf *
+curl -kO http://file.bos.redhat.com/~rharwood/rhel8.repo
+curl -kO https://copr.devel.redhat.com/coprs/rharwood/rhel8-missing/repo/rhel-8.dev/rharwood-rhel8-missing-rhel-8.dev.repo
+rpm -i https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+
+# rpm -e --nodeps centos-release
+# dnf -y install --nogpgcheck redhat-release
+
+dnf -y distro-sync --nogpgcheck
+
+dnf -y install psmisc gdb valgrind git emacs-nox tmux gdb strace nmap ltrace lsof valgrind krb5-{server,workstation} mosh rxvt-unicode-256color wget
+
+date > /etc/vagrant_provisioned_at
+SCRIPT
+
+Vagrant.configure("2") do |config|
+    config.vm.box = "generic/rhel8"
+    config.vm.provision "shell", inline: $script
+
+    config.vm.define "default" do |default|
+        default.vm.provider :libvirt do |domain|
+            domain.disk_bus = "virtio"
+            domain.cpus = 4
+            domain.graphics_type = "spice"
+            domain.memory = 2048
+            domain.video_type = "qxl"
+            domain.random :model => "random"
+        end
+    end
+end
