@@ -11,9 +11,9 @@ cd /etc/yum.repos.d
 rm -rf *
 
 curl -kO http://file.bos.redhat.com/~rharwood/rhel7.repo
-rpm -i https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 yum -y install /usr/bin/applydeltarpm --nogpgcheck || true
 yum -y distro-sync --nogpgcheck || true
+yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
 yum -y install psmisc gdb valgrind git vim emacs-nox tmux systemtap gdb strace nmap ltrace lsof krb5-{libs,server,workstation} rxvt-unicode-256color wget
 
