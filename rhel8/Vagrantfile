@@ -1,8 +1,10 @@
 $script = <<SCRIPT
 echo Beginning provisioning...
 
-echo -e 'secretes\nsecretes' | passwd root
 echo -e 'secretes\nsecretes' | passwd vagrant
+sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
+echo -e 'secretes\nsecretes' | passwd root
+systemctl restart sshd
 
 dnf -y install curl
 cd /etc/yum.repos.d
@@ -30,6 +32,7 @@ Vagrant.configure("2") do |config|
             domain.memory = 2048
             domain.video_type = "qxl"
             domain.random :model => "random"
+            domain.nic_model_type = "rtl8139"
         end
     end
 end

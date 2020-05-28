@@ -23,6 +23,7 @@ Vagrant.configure("2") do |config|
             domain.video_type = "qxl"
             domain.random :model => "random"
             domain.volume_cache = "unsafe"
+            domain.nic_model_type = "rtl8139"
         end
     end
 end
