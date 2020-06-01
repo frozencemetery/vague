@@ -6,6 +6,10 @@ sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_c
 echo -e 'secretes\nsecretes' | passwd root
 systemctl restart sshd
 
+# This image sucks
+echo -e "net.ipv6.conf.all.disable_ipv6=0\nnet.ipv6.conf.default.disable_ipv6=0" > /etc/sysctl.conf
+sysctl -p
+
 dnf -y install curl
 cd /etc/yum.repos.d
 rm -rf *
