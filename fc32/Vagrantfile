@@ -1,16 +1,14 @@
 $script = <<SCRIPT
 echo Beginning provisioning...
 
-echo -e 'secretes\nsecretes' | passwd vagrant
-sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
-echo -e 'secretes\nsecretes' | passwd root
-systemctl restart sshd
+echo -e "secretes\nsecretes" | passwd root
+echo -e "secretes\nsecretes" | passwd vagrant
 
 setenforce 0
 sed -i 's/SELINUX=\(enforcing\|permissive\)/SELINUX=disabled/g' /etc/selinux/config
 
 dnf config-manager --set-disabled \*
-dnf config-manager --set-enabled fedora
+dnf config-manager --set-enabled {fedora,updates{,-testing}}{,-debuginfo}
 
 dnf -y --downloadonly --nogpgcheck install fedora-repos-rawhide
 dnf -Cy install fedora-repos-rawhide
@@ -31,17 +29,14 @@ SCRIPT
 
 Vagrant.configure("2") do |config|
     config.vm.box = "fedora/32-cloud-base"
-
     config.vm.provision "shell", inline: $script
-
-    config.vm.define "rawhide" do |rawhide|
-        rawhide.vm.provider :libvirt do |domain|
+    config.vm.define "fc32" do |fc32|
+        fc32.vm.provider :libvirt do |domain|
             domain.cpus = 4
             domain.graphics_type = "spice"
-            domain.memory = 2048
+            domain.memory = 4096
             domain.video_type = "qxl"
             domain.random :model => "random"
-            domain.volume_cache = "unsafe"
             domain.nic_model_type = "rtl8139"
         end
     end
