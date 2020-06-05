@@ -10,13 +10,7 @@ sed -i 's/SELINUX=\(enforcing\|permissive\)/SELINUX=disabled/g' /etc/selinux/con
 dnf config-manager --set-disabled \*
 dnf config-manager --set-enabled {fedora,updates{,-testing}}{,-debuginfo}
 
-dnf -y --downloadonly --nogpgcheck install fedora-repos-rawhide
-dnf -Cy install fedora-repos-rawhide
-
-dnf config-manager --set-disabled \*
-dnf config-manager --set-enabled rawhide{,-debuginfo}
-
-# mirror failures again, and friggin rawhide...
+# mirror failures again...
 dnf -y distro-sync --downloadonly --nogpgcheck
 dnf -yC distro-sync --nogpgcheck || true
 
