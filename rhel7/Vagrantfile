@@ -10,7 +10,7 @@ sed -i 's/SELINUX=\(enforcing\|permissive\)/SELINUX=disabled/g' /etc/selinux/con
 cd /etc/yum.repos.d
 rm -rf *
 
-curl -kO http://file.bos.redhat.com/~rharwood/rhel7.repo
+curl -kO http://shell.bos.redhat.com/~rharwood/rhel7.repo
 yum -y install /usr/bin/applydeltarpm --nogpgcheck || true
 yum -y distro-sync --nogpgcheck || true
 yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm

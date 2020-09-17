@@ -2,8 +2,8 @@ $script = <<SCRIPT
 echo Beginning provisioning...
 
 echo -e 'secretes\nsecretes' | passwd vagrant
-sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
 echo -e 'secretes\nsecretes' | passwd root
+sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
 systemctl restart sshd
 
 # This image sucks
@@ -13,7 +13,7 @@ sysctl -p
 dnf -y install curl
 cd /etc/yum.repos.d
 rm -rf *
-curl -kO http://file.bos.redhat.com/~rharwood/rhel8.repo
+curl -kO http://shell.bos.redhat.com/~rharwood/rhel8.repo
 curl -kO https://copr.devel.redhat.com/coprs/rharwood/rhel8-missing/repo/rhel-8.dev/rharwood-rhel8-missing-rhel-8.dev.repo
 dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
 
