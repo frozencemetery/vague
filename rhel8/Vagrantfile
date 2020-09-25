@@ -4,7 +4,7 @@ echo Beginning provisioning...
 echo -e 'secretes\nsecretes' | passwd vagrant
 echo -e 'secretes\nsecretes' | passwd root
 sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
-systemctl restart sshd
+systemctl reload-or-restart sshd
 
 # This image sucks
 echo -e "net.ipv6.conf.all.disable_ipv6=0\nnet.ipv6.conf.default.disable_ipv6=0" > /etc/sysctl.conf
@@ -14,7 +14,6 @@ dnf -y install curl
 cd /etc/yum.repos.d
 rm -rf *
 curl -kO http://shell.bos.redhat.com/~rharwood/rhel8.repo
-curl -kO https://copr.devel.redhat.com/coprs/rharwood/rhel8-missing/repo/rhel-8.dev/rharwood-rhel8-missing-rhel-8.dev.repo
 dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
 
 dnf -y distro-sync --nogpgcheck
