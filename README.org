@@ -1,0 +1,6 @@
+* vague
+
+This is my repository of vagrant/libvirt setups.  They're minimally
+specialized.  RHEL images will only work inside the VPN, but could be easily
+adapted to any Satellite instance (or subscription-manager with slightly more
+effort).
