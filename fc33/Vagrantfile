@@ -1,0 +1,39 @@
+$script = <<SCRIPT
+echo Beginning provisioning...
+
+echo -e "secretes\nsecretes" | passwd root
+echo -e "secretes\nsecretes" | passwd vagrant
+sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+systemctl reload-or-restart sshd
+
+setenforce 0
+sed -i 's/SELINUX=\(enforcing\|permissive\)/SELINUX=disabled/g' /etc/selinux/config
+
+dnf config-manager --set-disabled \*
+dnf config-manager --set-enabled {fedora,updates{,-testing}}{,-debuginfo}
+
+# mirror failures again...
+dnf -y distro-sync --downloadonly --nogpgcheck --releasever=33
+dnf -yC distro-sync --nogpgcheck --releasever=33 || true
+
+dnf -y install psmisc gdb valgrind git vim emacs-nox tmux systemtap gdb strace nmap ltrace lsof krb5-{libs,server,workstation}
+
+dnf -y debuginfo-install krb5-{libs,workstation,server}
+
+date > /etc/vagrant_provisioned_at
+SCRIPT
+
+Vagrant.configure("2") do |config|
+    config.vm.box = "fedora/32-cloud-base"
+    config.vm.provision "shell", inline: $script
+    config.vm.define "fc33" do |fc33|
+        fc33.vm.provider :libvirt do |domain|
+            domain.cpus = 4
+            domain.graphics_type = "spice"
+            domain.memory = 4096
+            domain.video_type = "qxl"
+            domain.random :model => "random"
+            domain.nic_model_type = "rtl8139"
+        end
+    end
+end
