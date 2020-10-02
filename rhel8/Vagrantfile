@@ -12,13 +12,12 @@ sysctl -p
 
 dnf -y install curl
 cd /etc/yum.repos.d
-rm -rf *
 curl -kO http://shell.bos.redhat.com/~rharwood/rhel8.repo
 dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
 
 dnf -y distro-sync --nogpgcheck
 
-dnf -y install psmisc gdb valgrind git emacs-nox tmux gdb strace nmap ltrace lsof valgrind krb5-{server,workstation} mosh rxvt-unicode-256color wget
+dnf -y install psmisc gdb valgrind git emacs-nox tmux gdb strace nmap ltrace lsof valgrind krb5-{server,workstation} mosh rxvt-unicode wget
 
 date > /etc/vagrant_provisioned_at
 SCRIPT

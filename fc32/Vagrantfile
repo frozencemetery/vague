@@ -3,6 +3,8 @@ echo Beginning provisioning...
 
 echo -e "secretes\nsecretes" | passwd root
 echo -e "secretes\nsecretes" | passwd vagrant
+sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+systemctl reload-or-restart sshd
 
 setenforce 0
 sed -i 's/SELINUX=\(enforcing\|permissive\)/SELINUX=disabled/g' /etc/selinux/config
