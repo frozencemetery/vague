@@ -13,8 +13,8 @@ dnf config-manager --set-disabled \*
 dnf config-manager --set-enabled {fedora,updates{,-testing}}{,-debuginfo}
 
 # mirror failures again...
-dnf -y distro-sync --downloadonly --nogpgcheck --releasever=33
-dnf -yC distro-sync --nogpgcheck --releasever=33 || true
+dnf -y distro-sync --downloadonly
+dnf -yC distro-sync || true
 
 dnf -y install psmisc gdb valgrind git vim emacs-nox tmux systemtap gdb strace nmap ltrace lsof krb5-{libs,server,workstation}
 
@@ -24,7 +24,7 @@ date > /etc/vagrant_provisioned_at
 SCRIPT
 
 Vagrant.configure("2") do |config|
-    config.vm.box = "fedora/32-cloud-base"
+    config.vm.box = "fedora/33-cloud-base"
     config.vm.provision "shell", inline: $script
     config.vm.define "fc33" do |fc33|
         fc33.vm.provider :libvirt do |domain|
