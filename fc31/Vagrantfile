@@ -1,0 +1,37 @@
+$script = <<SCRIPT
+echo Beginning provisioning...
+
+echo -e "secretes\nsecretes" | passwd root
+echo -e "secretes\nsecretes" | passwd vagrant
+
+setenforce 0
+sed -i 's/SELINUX=\(enforcing\|permissive\)/SELINUX=disabled/g' /etc/selinux/config
+
+dnf config-manager --set-disabled \*
+dnf config-manager --set-enabled {fedora,updates{,-testing}}{,-debuginfo}
+
+# mirror failures again...
+dnf -y distro-sync --downloadonly --nogpgcheck
+dnf -yC distro-sync --nogpgcheck || true
+
+dnf -y install psmisc gdb valgrind git vim emacs-nox tmux systemtap gdb strace nmap ltrace lsof krb5-{libs,server,workstation}
+
+dnf -y debuginfo-install krb5-{libs,workstation,server}
+
+date > /etc/vagrant_provisioned_at
+SCRIPT
+
+Vagrant.configure("2") do |config|
+    config.vm.box = "fedora/31-cloud-base"
+    config.vm.provision "shell", inline: $script
+    config.vm.define "fc31" do |fc31|
+        fc31.vm.provider :libvirt do |domain|
+            domain.cpus = 4
+            domain.graphics_type = "spice"
+            domain.memory = 4096
+            domain.video_type = "qxl"
+            domain.random :model => "random"
+            domain.nic_model_type = "rtl8139"
+        end
+    end
+end
