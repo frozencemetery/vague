@@ -2,13 +2,16 @@ $script = <<SCRIPT
 echo Beginning provisioning...
 
 echo -e 'secretes\nsecretes' | passwd vagrant
-sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
-sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' \
+    /etc/ssh/sshd_config
+sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' \
+    /etc/ssh/sshd_config
 echo -e 'secretes\nsecretes' | passwd root
 systemctl restart sshd
 
 setenforce 0
-sed -i 's/SELINUX=\(enforcing\|permissive\)/SELINUX=disabled/g' /etc/selinux/config
+sed -i 's/SELINUX=\(enforcing\|permissive\)/SELINUX=disabled/g' \
+    /etc/selinux/config
 
 dnf config-manager --set-disabled \*
 dnf config-manager --set-enabled fedora
@@ -23,15 +26,16 @@ dnf config-manager --set-enabled rawhide{,-debuginfo}
 dnf -y distro-sync --downloadonly --nogpgcheck
 dnf -yC distro-sync --nogpgcheck || true
 
-dnf -y install psmisc gdb valgrind git vim emacs-nox tmux systemtap gdb strace nmap ltrace lsof krb5-{libs,server,workstation}
-
-dnf -y debuginfo-install krb5-{libs,workstation,server}
+dnf -y install psmisc gdb valgrind git vim emacs-nox tmux systemtap gdb \
+    strace nmap ltrace lsof krb5-{libs,server,workstation} ipa-server{,-dns} \
+    ccache
+dnf -y debuginfo-install krb5-{libs,workstation,server} libkadm5
 
 date > /etc/vagrant_provisioned_at
 SCRIPT
 
 Vagrant.configure("2") do |config|
-    config.vm.box = "fedora/33-cloud-base"
+    config.vm.box = "fedora/34-cloud-base"
 
     config.vm.provision "shell", inline: $script
 
