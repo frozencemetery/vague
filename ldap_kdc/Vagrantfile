@@ -1,0 +1,117 @@
+$script = <<SCRIPT
+echo Beginning provisioning...
+
+echo -e "secretes\nsecretes" | passwd root
+echo -e "secretes\nsecretes" | passwd vagrant
+sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' \
+    /etc/ssh/sshd_config
+systemctl reload-or-restart sshd
+
+setenforce 0
+sed -i 's/SELINUX=\(enforcing\|permissive\)/SELINUX=disabled/g' \
+    /etc/selinux/config
+
+dnf config-manager --set-disabled \*
+dnf config-manager --set-enabled {fedora,updates{,-testing}}{,-debuginfo}
+
+# mirror failures again...
+dnf -y distro-sync --downloadonly
+dnf -yC distro-sync || true
+
+dnf -y install psmisc gdb valgrind git vim emacs-nox tmux systemtap gdb \
+    strace nmap ltrace lsof krb5-{libs,server{,-ldap},workstation} ccache \
+    openldap-servers
+
+dnf -y debuginfo-install krb5-{libs,workstation,server{,-ldap}}
+
+hostnamectl set-hostname kerberos.example.com
+printf "127.0.0.1 kerberos.example.com\n" >> /etc/hosts
+
+mkdir -p /var/pain
+cat > /var/pain/slapd.conf <<EOF
+include    /usr/share/doc/krb5-server-ldap/kerberos.schema
+include    /etc/openldap/schema/core.schema
+include    /etc/openldap/schema/cosine.schema
+include    /etc/openldap/schema/inetorgperson.schema
+include    /etc/openldap/schema/nis.schema
+
+database   config
+rootdn     cn=root,cn=config
+rootpw     root
+
+moduleload back_mdb
+database   mdb
+suffix     "dc=example,dc=com"
+rootdn     "cn=root,dc=example,dc=com"
+rootpw     root
+EOF
+
+cat > /var/pain/kerberos.ldif <<EOF
+dn: dc=example,dc=com
+objectClass: domain
+dc: example
+
+dn: cn=Kerberos,dc=example,dc=com
+objectClass: krbContainer
+cn: Kerberos
+EOF
+
+cat > /etc/krb5.conf <<EOF
+[libdefaults]
+  default_realm = EXAMPLE.COM
+  dns_lookup_realm = false
+  dns_lookup_kdc = false
+  rdns = false
+  ticket_lifetime = 24h
+  forwardable = yes
+
+[realms]
+  EXAMPLE.COM = {
+    kdc = kerberos.example.com
+    admin_server = kerberos.example.com
+  }
+
+[domain_realm]
+  .example.com = EXAMPLE.COM
+  example.com = EXAMPLE.COM
+EOF
+
+cat >> /var/kerberos/krb5kdc/kdc.conf <<EOF
+[dbmodules]
+    EXAMPLE.COM = {
+        db_library = kldap
+        ldap_kerberos_container_dn = cn=Kerberos,dc=example,dc=com
+        ldap_kdc_dn = cn=root,dc=example,dc=com
+        ldap_kadmind_dn = cn=root,dc=example,dc=com
+        ldap_service_password_file = /var/pain/stash
+        ldap_servers = ldap://kerberos.example.com
+    }
+EOF
+
+mkdir -p /var/openldap-data
+slapadd -f /var/pain/slapd.conf -l /var/pain/kerberos.ldif
+slapd -d 0 -f /var/pain/slapd.conf -h ldap://kerberos.example.com &
+printf "root\nroot\n" | kdb5_ldap_util stashsrvpw -w root \
+    -H ldap://kerberos.example.com -f /var/pain/stash \
+    "cn=root,dc=example,dc=com"
+printf "root\nroot\n" | kdb5_ldap_util -H ldap://kerberos.example.com \
+    -D cn=root,dc=example,dc=com create -w root -s -r EXAMPLE.COM
+systemctl start krb5kdc kadmin
+
+date > /etc/vagrant_provisioned_at
+SCRIPT
+
+Vagrant.configure("2") do |config|
+    config.vm.box = "fedora/34-cloud-base"
+    config.vm.provision "shell", inline: $script
+    config.vm.define "fc34" do |fc34|
+        fc34.vm.provider :libvirt do |domain|
+            domain.cpus = 4
+            domain.graphics_type = "spice"
+            domain.memory = 4096
+            domain.video_type = "qxl"
+            domain.random :model => "random"
+            domain.nic_model_type = "rtl8139"
+        end
+    end
+end
