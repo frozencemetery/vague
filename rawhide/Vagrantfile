@@ -29,7 +29,12 @@ dnf -yC distro-sync --nogpgcheck || true
 dnf -y install psmisc gdb valgrind git vim emacs-nox tmux systemtap gdb \
     strace nmap ltrace lsof krb5-{libs,server,workstation} ipa-server{,-dns} \
     ccache
-dnf -y debuginfo-install krb5-{libs,workstation,server} libkadm5
+dnf -y debuginfo-install krb5-{libs,pkinit,server,workstation} libkadm5 \
+    glibc keyutils-libs libcom_err libselinux openssl-libs pcre2 zlib \
+    libev libverto{,-libev} libss gssproxy libedit-devel ncurses-libs
+
+# This straight up doesn't work
+rm -f /etc/profile.d/debuginfod*
 
 date > /etc/vagrant_provisioned_at
 SCRIPT
