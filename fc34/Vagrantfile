@@ -17,7 +17,7 @@ dnf config-manager --set-enabled {fedora,updates{,-testing}}{,-debuginfo}
 dnf -y distro-sync --downloadonly --nogpgcheck --releasever=34
 dnf -yC distro-sync --nogpgcheck --releasever=34 || true
 
-dnf -y install psmisc gdb valgrind git vim emacs-nox tmux systemtap gdb strace nmap ltrace lsof krb5-{libs,server,workstation}
+dnf -y install psmisc gdb valgrind git vim emacs-nox tmux systemtap gdb strace nmap ltrace lsof krb5-{libs,server,workstation,devel}
 
 dnf -y debuginfo-install krb5-{libs,workstation,server}
 

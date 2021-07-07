@@ -1,0 +1,17 @@
+ccache
+emacs-nox
+gdb
+gdb
+git
+ipa-server{,-dns}
+krb5-{server,workstation}
+langpacks-en
+lsof
+ltrace
+nmap
+psmisc
+strace
+tmux
+valgrind
+valgrind
+wget

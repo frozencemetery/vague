@@ -1,0 +1,15 @@
+glibc
+gssproxy
+keyutils-libs
+krb5-{libs,pkinit,server,workstation}
+libcom_err
+libedit-devel
+libev
+libkadm5
+libselinux
+libss
+libverto{,-libev}
+ncurses-libs
+openssl-libs
+pcre2
+zlib
