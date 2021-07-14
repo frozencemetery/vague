@@ -1,13 +1,15 @@
-$script = <<SCRIPT
+$pkgs = File.read("../packages").gsub("\n", " ")
+$debuginfos = File.read("../debuginfos").gsub("\n", " ")
+
+$script = """
 echo Beginning provisioning...
 
 echo -e 'secretes\nsecretes' | passwd vagrant
-sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' \
-    /etc/ssh/sshd_config
-sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' \
-    /etc/ssh/sshd_config
 echo -e 'secretes\nsecretes' | passwd root
-systemctl restart sshd
+sed -i -e 's/PasswordAuthentication no/PasswordAuthentication yes/' \
+    -e 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' \
+    /etc/ssh/sshd_config
+systemctl reload-or-restart sshd
 
 setenforce 0
 sed -i 's/SELINUX=\(enforcing\|permissive\)/SELINUX=disabled/g' \
@@ -26,18 +28,15 @@ dnf config-manager --set-enabled rawhide{,-debuginfo}
 dnf -y distro-sync --downloadonly --nogpgcheck
 dnf -yC distro-sync --nogpgcheck || true
 
-dnf -y install psmisc gdb valgrind git vim emacs-nox tmux systemtap gdb \
-    strace nmap ltrace lsof krb5-{libs,server,workstation} ipa-server{,-dns} \
-    ccache
-dnf -y debuginfo-install krb5-{libs,pkinit,server,workstation} libkadm5 \
-    glibc keyutils-libs libcom_err libselinux openssl-libs pcre2 zlib \
-    libev libverto{,-libev} libss gssproxy libedit-devel ncurses-libs
+dnf -y install #{$pkgs}
+dnf -y debuginfo-install #{$debuginfos}
+dnf -y build-dep krb5 || true
 
 # This straight up doesn't work
 rm -f /etc/profile.d/debuginfod*
 
 date > /etc/vagrant_provisioned_at
-SCRIPT
+"""
 
 Vagrant.configure("2") do |config|
     config.vm.box = "fedora/34-cloud-base"
