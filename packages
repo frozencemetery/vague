@@ -3,13 +3,14 @@ clang
 emacs-nox
 gdb
 git
-ipa-server{,-dns}
-krb5-{libs,server,workstation}
 langpacks-en
+libcmocka-devel
 lsof
 ltrace
 nmap
 psmisc
+python3-virtualenv
+resolv_wrapper
 strace
 systemtap
 tmux

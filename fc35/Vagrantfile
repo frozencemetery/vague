@@ -18,15 +18,9 @@ sed -i 's/SELINUX=\(enforcing\|permissive\)/SELINUX=disabled/g' \
 dnf config-manager --set-disabled \*
 dnf config-manager --set-enabled fedora
 
-dnf -y --downloadonly --nogpgcheck install fedora-repos-rawhide
-dnf -Cy install fedora-repos-rawhide
-
-dnf config-manager --set-disabled \*
-dnf config-manager --set-enabled rawhide{,-debuginfo}
-
 # mirror failures again, and friggin rawhide...
-dnf -y distro-sync --downloadonly --nogpgcheck
-dnf -yC distro-sync --nogpgcheck || true
+dnf -y distro-sync --downloadonly --nogpgcheck --releasever=35
+dnf -yC distro-sync --nogpgcheck --releasever=35 || true
 
 dnf -y install #{$pkgs}
 dnf -y debuginfo-install #{$debuginfos}
@@ -43,8 +37,8 @@ Vagrant.configure("2") do |config|
 
     config.vm.provision "shell", inline: $script
 
-    config.vm.define "rawhide" do |rawhide|
-        rawhide.vm.provider :libvirt do |domain|
+    config.vm.define "fc35" do |fc35|
+        fc35.vm.provider :libvirt do |domain|
             domain.cpus = 4
             domain.graphics_type = "spice"
             domain.memory = 2048
