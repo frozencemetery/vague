@@ -30,7 +30,6 @@ dnf -yC distro-sync --nogpgcheck || true
 
 dnf -y install #{$pkgs}
 dnf -y debuginfo-install #{$debuginfos}
-dnf -y build-dep krb5 || true
 
 # This straight up doesn't work
 rm -f /etc/profile.d/debuginfod*
